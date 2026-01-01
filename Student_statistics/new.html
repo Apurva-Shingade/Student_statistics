@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeVedas Analytics Pro | Institutional Intelligence 2026</title>
+    <style>
+        /* --- 1. THEME & CORE UI --- */
+        :root {
+            --bg: #020617;
+            --sidebar: #0f172a;
+            --accent: #64ffda;
+            --card: rgba(30, 41, 59, 0.7);
+            --danger: #ef4444;
+            --success: #10b981;
+            --text: #f1f5f9;
+            --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background: radial-gradient(circle at top right, #1e293b, var(--bg)); color: var(--text); min-height: 100vh; display: flex; overflow: hidden; }
+
+        /* --- 2. AUTHENTICATION --- */
+        #authOverlay { position: fixed; inset: 0; background: var(--bg); z-index: 2000; display: flex; justify-content: center; align-items: center; transition: var(--transition); }
+        .auth-card { background: var(--card); padding: 40px; border-radius: 20px; backdrop-filter: blur(15px); border: 1px solid rgba(100, 255, 218, 0.2); text-align: center; width: 380px; box-shadow: 0 0 50px rgba(0,0,0,0.5); }
+
+        /* --- 3. SIDEBAR NAVIGATION --- */
+        .sidebar { width: 260px; background: var(--sidebar); height: 100vh; position: fixed; border-right: 1px solid #1e293b; display: flex; flex-direction: column; z-index: 1000; }
+        .brand { padding: 30px; text-align: center; border-bottom: 1px solid #1e293b; color: var(--accent); font-weight: 800; font-size: 1.4rem; letter-spacing: 1px; }
+        .nav-menu { padding: 20px 0; flex-grow: 1; overflow-y: auto; }
+        .nav-item { padding: 15px 25px; display: flex; align-items: center; gap: 12px; cursor: pointer; color: #94a3b8; transition: var(--transition); font-size: 0.95rem; }
+        .nav-item:hover, .nav-item.active { background: #1e293b; color: var(--accent); border-left: 4px solid var(--accent); }
+
+        /* --- 4. MAIN LAYOUT --- */
+        .main { margin-left: 260px; width: calc(100% - 260px); height: 100vh; overflow-y: auto; }
+        .header { height: 70px; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: space-between; padding: 0 40px; position: sticky; top: 0; z-index: 900; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .content { padding: 35px; }
+
+        /* --- 5. COMPONENT STYLING --- */
+        .grid-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 35px; }
+        .card { background: var(--card); padding: 25px; border-radius: 18px; border: 1px solid rgba(255,255,255,0.05); transition: var(--transition); }
+        .card:hover { transform: translateY(-5px); border-color: var(--accent); }
+
+        .btn { padding: 12px 20px; border-radius: 10px; border: none; cursor: pointer; font-weight: 600; transition: var(--transition); font-size: 0.9rem; }
+        .btn-accent { background: var(--accent); color: var(--bg); }
+        .btn-accent:hover { box-shadow: 0 0 15px var(--accent); transform: scale(1.02); }
+
+        input, select { width: 100%; padding: 12px; background: #1e293b; border: 1px solid #334155; color: white; border-radius: 10px; margin-bottom: 15px; outline: none; }
+        input:focus { border-color: var(--accent); }
+
+        /* --- 6. CHART SIMULATION --- */
+        .bar-chart { display: flex; align-items: flex-end; gap: 12px; height: 180px; margin-top: 20px; }
+        .bar { flex: 1; background: var(--accent); border-radius: 4px 4px 0 0; position: relative; min-width: 30px; }
+        .bar-label { font-size: 0.65rem; color: #94a3b8; transform: rotate(-45deg); margin-top: 15px; white-space: nowrap; }
+
+        /* --- 7. SPECIAL MODULES --- */
+        .comparison-zone { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        .tab-content { display: none; animation: fadeIn 0.4s ease; }
+        .active-tab { display: block !important; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .hidden { display: none !important; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th { text-align: left; padding: 12px; color: var(--accent); border-bottom: 1px solid #334155; font-size: 0.85rem; }
+        td { padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.9rem; color: #cbd5e1; }
+    </style>
+</head>
+<body>
+
+    <div id="authOverlay">
+        <div class="auth-card">
+            <h2 style="margin-bottom: 10px;">Institutional Login</h2>
+            <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 25px;">CodeVedas Analytics v2.0</p>
+            <input type="password" id="passInput" placeholder="Access Password">
+            <div id="captchaBox" style="background: #1e293b; padding: 12px; margin-bottom: 15px; border-radius: 10px; font-weight: bold; color: var(--accent); letter-spacing: 5px; border: 1px dashed var(--accent);"></div>
+            <input type="text" id="capInput" placeholder="Enter Captcha">
+            <button class="btn btn-accent" style="width: 100%;" onclick="validateAuth()">Unlock System</button>
+        </div>
+    </div>
+
+    <aside class="sidebar">
+        <div class="brand">CODEVEDAS</div>
+        <nav class="nav-menu">
+            <div class="nav-item active" onclick="switchTab('tab-dash')">📊 <span>Dashboard</span></div>
+            <div class="nav-item" onclick="switchTab('tab-enroll')">➕ <span>Enroll Student</span></div>
+            <div class="nav-item" onclick="switchTab('tab-compare')">⚖️ <span>Student Comparison</span></div>
+            <div class="nav-item" onclick="switchTab('tab-inst')">🏫 <span>Institute Benchmark</span></div>
+            <div class="nav-item" onclick="switchTab('tab-registry')">🗂️ <span>Master Registry</span></div>
+        </nav>
+        <div class="nav-item" style="border-top: 1px solid #1e293b; margin-top: auto;" onclick="location.reload()">🚪 Logout</div>
+    </aside>
+
+    <div class="main">
+        <header class="header">
+            <div style="font-weight: 600;">CodeVedas Analytics Pro | <span id="currentCity">Mumbai Region</span></div>
+            <div style="display: flex; gap: 15px; align-items: center;">
+                <button class="btn btn-accent" style="padding: 8px 15px;" onclick="generateRandomDataset()">Reset Demo Data</button>
+                <div style="width: 35px; height: 35px; background: #334155; border: 2px solid var(--accent); border-radius: 50%;"></div>
+            </div>
+        </header>
+
+        <div class="content">
+            <section id="tab-dash" class="tab-content active-tab">
+                <div class="grid-stats">
+                    <div class="card"><h4>Students</h4><p id="stat-total" style="font-size: 1.6rem; color: var(--accent);">0</p></div>
+                    <div class="card"><h4>Avg Aggregate</h4><p id="stat-avg" style="font-size: 1.6rem;">0.0</p></div>
+                    <div class="card"><h4>Top Institute</h4><p id="stat-topInst" style="font-size: 1rem; color: var(--success); font-weight: bold;">IIT Bombay</p></div>
+                    <div class="card"><h4>Branch Reach</h4><p style="font-size: 1.6rem;">6</p></div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 30px;">
+                    <div class="card">
+                        <h3>Branch-wise Performance (GPA Avg)</h3>
+                        <div class="bar-chart" id="branchBars"></div>
+                    </div>
+                    <div class="card">
+                        <h3>City Analytics</h3>
+                        <table style="margin-top: 10px;">
+                            <thead><tr><th>City</th><th>Students</th><th>Avg %</th></tr></thead>
+                            <tbody id="cityTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <section id="tab-enroll" class="tab-content">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px;">
+                    <div class="card">
+                        <h3>Academic Enrollment</h3>
+                        <input type="text" id="inName" placeholder="Student Full Name">
+                        <select id="inBranch">
+                            <option>Computer Science</option><option>Electrical Engineering</option>
+                            <option>Electronics Engineering</option><option>Mechanical Engineering</option>
+                            <option>Civil Engineering</option>
+                        </select>
+                        <select id="inCity">
+                            <option>Mumbai</option><option>Bangalore</option><option>Pune</option><option>Delhi</option>
+                        </select>
+                        <input type="number" id="inGpa" step="0.1" placeholder="GPA Score (0-4.0)">
+                    </div>
+                    <div class="card">
+                        <h3>Extracurricular & Files</h3>
+                        <select id="inSport">
+                            <option>Cricket</option><option>Football</option><option>Badminton</option><option>Swimming</option>
+                        </select>
+                        <input type="text" id="inHobby" placeholder="Hobbies (comma separated)">
+                        <p style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 10px;">Upload Certification / Projects:</p>
+                        <input type="file" id="inFile">
+                        <button class="btn btn-accent" style="width: 100%; margin-top: 10px;" onclick="saveStudent()">Securely Enroll Student</button>
+                    </div>
+                </div>
+            </section>
+
+            <section id="tab-compare" class="tab-content">
+                <div class="card">
+                    <h3>Head-to-Head Comparison</h3>
+                    <div style="display: flex; gap: 20px; margin-top: 20px;">
+                        <select id="selStu1" onchange="compareEngine()"></select>
+                        <span style="padding-top: 10px;">VERSUS</span>
+                        <select id="selStu2" onchange="compareEngine()"></select>
+                    </div>
+                    <div id="compareResult" style="margin-top: 30px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;"></div>
+                </div>
+            </section>
+
+            <section id="tab-inst" class="tab-content">
+                <div class="card">
+                    <h3>Institute Benchmarking</h3>
+                    <table style="width: 100%;">
+                        <thead><tr><th>Institute Name</th><th>Total Students</th><th>Branch Specialization</th><th>Avg GPA</th></tr></thead>
+                        <tbody id="instTable"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="tab-registry" class="tab-content">
+                <div class="card">
+                    <h3>Global Student Registry</h3>
+                    <table style="width: 100%;">
+                        <thead><tr><th>Name</th><th>Branch</th><th>City</th><th>GPA</th><th>Sports</th></tr></thead>
+                        <tbody id="regTable"></tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script>
+        /* --- 2026 INTELLIGENCE CORE --- */
+        let captchaCode = "";
+        let studentDB = [];
+        const cities = ["Mumbai", "Bangalore", "Pune", "Delhi", "Hyderabad"];
+        const branches = ["Computer Science", "Electrical Engineering", "Electronics Engineering", "Mechanical Engineering", "Civil Engineering"];
+        const institutes = ["IIT Bombay", "BITS Pilani", "NIT Trichy", "COEP Pune", "RVCE Bangalore"];
+        const sports = ["Cricket", "Football", "Badminton", "Swimming", "Athletics"];
+
+        // 1. DATA GENERATOR (50 RANDOM INDIAN STUDENTS)
+        function generateRandomDataset() {
+            const firstNames = ["Aarav", "Ishani", "Vihaan", "Ananya", "Kabir", "Saanvi", "Arjun", "Myra", "Rohan", "Diya", "Reyansh", "Prisha", "Aryan", "Aditi", "Ishaan"];
+            const lastNames = ["Sharma", "Patel", "Gupta", "Iyer", "Malhotra", "Reddy", "Verma", "Kapoor", "Das", "Mukherjee", "Joshi", "Singhal"];
+            
+            studentDB = [];
+            for (let i = 0; i < 50; i++) {
+                studentDB.push({
+                    name: firstNames[Math.floor(Math.random() * firstNames.length)] + " " + lastNames[Math.floor(Math.random() * lastNames.length)],
+                    branch: branches[Math.floor(Math.random() * branches.length)],
+                    city: cities[Math.floor(Math.random() * cities.length)],
+                    inst: institutes[Math.floor(Math.random() * institutes.length)],
+                    gpa: parseFloat((Math.random() * (4.0 - 2.0) + 2.0).toFixed(2)),
+                    sport: sports[Math.floor(Math.random() * sports.length)],
+                    hobby: "Coding, Music"
+                });
+            }
+            localStorage.setItem('CodeVedas_Elite_DB', JSON.stringify(studentDB));
+            initDashboard();
+        }
+
+        // 2. AUTHENTICATION
+        window.onload = () => {
+            captchaCode = Math.random().toString(36).substring(2, 7).toUpperCase();
+            document.getElementById('captchaBox').innerText = captchaCode;
+            studentDB = JSON.parse(localStorage.getItem('CodeVedas_Elite_DB')) || [];
+            if(studentDB.length === 0) generateRandomDataset();
+            initDashboard();
+        };
+
+        function validateAuth() {
+            if(document.getElementById('passInput').value === "Teacher@123" && document.getElementById('capInput').value.toUpperCase() === captchaCode) {
+                document.getElementById('authOverlay').style.opacity = '0';
+                setTimeout(() => document.getElementById('authOverlay').classList.add('hidden'), 500);
+            } else { alert("Access Denied"); }
+        }
+
+        // 3. NAVIGATION & UI
+        function switchTab(id) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active-tab'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById(id).classList.add('active-tab');
+            event.currentTarget.classList.add('active');
+            
+            if(id === 'tab-compare') populateSelectors();
+            if(id === 'tab-inst') renderInstitutes();
+            if(id === 'tab-registry') renderRegistry();
+            if(id === 'tab-dash') initDashboard();
+        }
+
+        function initDashboard() {
+            document.getElementById('stat-total').innerText = studentDB.length;
+            const avg = (studentDB.reduce((a, b) => a + b.gpa, 0) / studentDB.length).toFixed(2);
+            document.getElementById('stat-avg').innerText = avg;
+            
+            // Render Branch Bars
+            const container = document.getElementById('branchBars');
+            container.innerHTML = "";
+            branches.forEach(b => {
+                const bList = studentDB.filter(s => s.branch === b);
+                const bAvg = bList.length ? (bList.reduce((acc, curr) => acc + curr.gpa, 0) / bList.length) : 0;
+                const h = (bAvg / 4) * 100;
+                container.innerHTML += `<div style="flex:1; display:flex; flex-direction:column; align-items:center;">
+                    <div class="bar" style="height:${h}%; width:30px;"><span style="position:absolute; top:-20px; font-size:0.7rem; width:100%; text-align:center;">${bAvg.toFixed(1)}</span></div>
+                    <span class="bar-label">${b.split(' ')[0]}</span>
+                </div>`;
+            });
+
+            // City Table
+            const cityBody = document.getElementById('cityTable');
+            cityBody.innerHTML = cities.slice(0, 4).map(c => {
+                const cList = studentDB.filter(s => s.city === c);
+                const cAvg = cList.length ? (cList.reduce((acc, curr) => acc + curr.gpa, 0) / cList.length).toFixed(1) : 0;
+                return `<tr><td>${c}</td><td>${cList.length}</td><td>${cAvg}</td></tr>`;
+            }).join('');
+        }
+
+        function saveStudent() {
+            const stu = {
+                name: document.getElementById('inName').value,
+                branch: document.getElementById('inBranch').value,
+                city: document.getElementById('inCity').value,
+                gpa: parseFloat(document.getElementById('inGpa').value) || 0,
+                sport: document.getElementById('inSport').value,
+                hobby: document.getElementById('inHobby').value,
+                inst: institutes[Math.floor(Math.random() * institutes.length)]
+            };
+            studentDB.push(stu);
+            localStorage.setItem('CodeVedas_Elite_DB', JSON.stringify(studentDB));
+            alert("Record Certified & Saved");
+            initDashboard();
+        }
+
+        function populateSelectors() {
+            const s1 = document.getElementById('selStu1');
+            const s2 = document.getElementById('selStu2');
+            const opts = studentDB.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
+            s1.innerHTML = opts; s2.innerHTML = opts;
+        }
+
+        function compareEngine() {
+            const stu1 = studentDB.find(s => s.name === document.getElementById('selStu1').value);
+            const stu2 = studentDB.find(s => s.name === document.getElementById('selStu2').value);
+            const res = document.getElementById('compareResult');
+            const card = (s) => `<div class="card"><h4>${s.name}</h4><p>Branch: ${s.branch}</p><p>GPA: ${s.gpa}</p><p>Sport: ${s.sport}</p></div>`;
+            res.innerHTML = card(stu1) + card(stu2);
+        }
+
+        function renderInstitutes() {
+            const body = document.getElementById('instTable');
+            body.innerHTML = institutes.map(inst => {
+                const list = studentDB.filter(s => s.inst === inst);
+                const avg = list.length ? (list.reduce((a, b) => a + b.gpa, 0) / list.length).toFixed(2) : 0;
+                return `<tr><td>${inst}</td><td>${list.length}</td><td>${list[0] ? list[0].branch : 'N/A'}</td><td>${avg}</td></tr>`;
+            }).join('');
+        }
+
+        function renderRegistry() {
+            document.getElementById('regTable').innerHTML = studentDB.map(s => `
+                <tr><td>${s.name}</td><td>${s.branch}</td><td>${s.city}</td><td>${s.gpa}</td><td>${s.sport}</td></tr>
+            `).join('');
+        }
+    </script>
+</body>
+</html>
