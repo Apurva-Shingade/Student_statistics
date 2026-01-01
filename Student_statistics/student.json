@@ -1,0 +1,9 @@
+[
+  {
+    "name": "Rahul",
+    "records": [
+      {"std": 1, "math": 85, "science": 90},
+      {"std": 2, "math": 88, "science": 92}
+    ]
+  }
+]
